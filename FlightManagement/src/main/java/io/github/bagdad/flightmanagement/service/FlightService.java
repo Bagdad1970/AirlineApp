@@ -2,10 +2,14 @@ package io.github.bagdad.flightmanagement.service;
 
 import io.github.bagdad.flightmanagement.dto.request.FlightQuery;
 import io.github.bagdad.flightmanagement.exception.FlightNotFoundException;
+import io.github.bagdad.flightmanagement.helper.CSVHelper;
 import io.github.bagdad.flightmanagement.model.Flight;
 import io.github.bagdad.flightmanagement.repository.FlightRepository;
+import org.springframework.core.io.InputStreamResource;
 import org.springframework.stereotype.Service;
 
+import java.io.IOException;
+import java.io.InputStream;
 import java.time.LocalDateTime;
 import java.util.List;
 
@@ -50,6 +54,22 @@ public class FlightService {
     public List<Flight> query(FlightQuery query) {
 
         return repository.query(query);
+    }
 
+    public InputStreamResource load() throws IOException {
+        List<Flight> bookings = findAll();
+
+        return new InputStreamResource(
+                CSVHelper.writeToCSC(bookings)
+        );
+    }
+
+    public void importFromCSV(InputStream file) throws IOException {
+
+        List<Flight> flights = CSVHelper.loadFromCSV(file);
+
+        if (!flights.isEmpty()) {
+            repository.saveAll(flights);
+        }
     }
 }

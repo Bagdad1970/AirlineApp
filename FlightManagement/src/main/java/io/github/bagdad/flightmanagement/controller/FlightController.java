@@ -5,14 +5,19 @@ import io.github.bagdad.flightmanagement.dto.request.FlightQuery;
 import io.github.bagdad.flightmanagement.dto.request.FlightUpdate;
 import io.github.bagdad.flightmanagement.model.Flight;
 import io.github.bagdad.flightmanagement.service.FlightService;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import io.swagger.v3.oas.annotations.Parameter;
+import org.springframework.core.io.InputStreamResource;
+import org.springframework.core.io.Resource;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
 import java.util.List;
 
-@RequestMapping("/flight")
+@RequestMapping("/api/flight")
 @RestController
 public class FlightController {
 
@@ -62,5 +67,28 @@ public class FlightController {
     public List<Flight> findAll() {
         return service.findAll();
     }
+
+    @GetMapping("/export-csv")
+    public ResponseEntity<Resource> exportAsCSV() throws IOException {
+        Resource resource = service.load();
+
+        return ResponseEntity.ok()
+                .header(HttpHeaders.CONTENT_DISPOSITION,
+                        "attachment; filename=flights.csv")
+                .contentType(MediaType.parseMediaType("application/csv"))
+                .body(resource);
+    }
+
+    @PostMapping(value="/import-csv", consumes = "application/csv")
+    public ResponseEntity<String> importAsCSV(@Parameter(description = "Файл для загрузки", required = true) @RequestParam("file") MultipartFile file) throws IOException {
+        service.importFromCSV(file.getInputStream());
+
+        return ResponseEntity.ok("CSV Data Saved into Database");
+    }
+
+//    @PostMapping("/batch-create")
+//    public void saveAll(List<Flight> flights) {
+//
+//    }
 
 }

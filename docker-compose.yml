@@ -80,5 +80,15 @@ services:
 #      FLIGHT_SERVICE_URL: http://flight-service:8080
 #    depends_on: [booking-db, flight-service]
 
+#  rabbitmq:
+#    image: rabbitmq:3.13-management-alpine
+#    container_name: rabbitmq
+#    ports:
+#      - "5672:5672"
+#      - "15672:15672"
+#    volumes:
+#      - rabbitmq_data:/var/lib/rabbitmq
+
 volumes:
   pgdata:
+  rabbitmq_data:

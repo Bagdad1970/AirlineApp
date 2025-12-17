@@ -3,11 +3,16 @@ package io.github.bagdad.ticketbooking.repository;
 import io.github.bagdad.ticketbooking.model.Booking;
 import io.github.bagdad.ticketbooking.model.BookingMapper;
 import org.springframework.dao.EmptyResultDataAccessException;
+import org.springframework.jdbc.core.BatchPreparedStatementSetter;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Repository;
 
+import java.sql.PreparedStatement;
+import java.sql.SQLException;
+import java.sql.Timestamp;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Repository
 public class BookingRepository {
@@ -40,6 +45,35 @@ public class BookingRepository {
                 booking.getCreatedAt(),
                 booking.getUpdatedAt()
         );
+    }
+
+    public void saveAll(List<Booking> bookings) {
+        if (bookings.isEmpty()) {
+            return;
+        }
+
+        String sql = """
+        INSERT INTO bookings (
+            id, flight_id, passenger_count, created_at, updated_at
+        ) VALUES (?, ?, ?, ?, ?)
+    """;
+
+        jdbcTemplate.batchUpdate(sql, new BatchPreparedStatementSetter() {
+            @Override
+            public void setValues(PreparedStatement ps, int i) throws SQLException {
+                Booking booking = bookings.get(i);
+                ps.setObject(1, booking.getId());
+                ps.setObject(2, booking.getFlightId());
+                ps.setInt(3, booking.getPassengerCount());
+                ps.setTimestamp(4, Timestamp.valueOf(booking.getCreatedAt()));
+                ps.setTimestamp(5, Timestamp.valueOf(booking.getUpdatedAt()));
+            }
+
+            @Override
+            public int getBatchSize() {
+                return bookings.size();
+            }
+        });
     }
 
     public Booking update(Booking booking) {

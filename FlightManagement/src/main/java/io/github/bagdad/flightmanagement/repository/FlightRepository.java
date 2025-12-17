@@ -3,12 +3,19 @@ package io.github.bagdad.flightmanagement.repository;
 import io.github.bagdad.flightmanagement.dto.request.FlightQuery;
 import io.github.bagdad.flightmanagement.model.Flight;
 import org.springframework.dao.EmptyResultDataAccessException;
+import org.springframework.jdbc.core.BatchPreparedStatementSetter;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Repository;
+import org.springframework.transaction.annotation.Transactional;
 
+import java.beans.Transient;
+import java.sql.PreparedStatement;
+import java.sql.SQLException;
+import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Repository
 public class FlightRepository {
@@ -24,7 +31,7 @@ public class FlightRepository {
         String sql = """
         INSERT INTO flights (
             number, from_city, to_city, departure, arrival, passenger_count, ticket_price, created_at, updated_at
-        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
         RETURNING
             id,
             number,
@@ -51,6 +58,36 @@ public class FlightRepository {
                 flight.getCreatedAt(),
                 flight.getUpdatedAt()
         );
+    }
+
+    public void saveAll(List<Flight> flights) {
+        String sql = """
+        INSERT INTO flights (
+            number, from_city, to_city, departure, arrival, 
+            passenger_count, ticket_price, created_at, updated_at
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+    """;
+
+        jdbcTemplate.batchUpdate(sql, new BatchPreparedStatementSetter() {
+            @Override
+            public void setValues(PreparedStatement ps, int i) throws SQLException {
+                Flight flight = flights.get(i);
+                ps.setString(1, flight.getNumber());
+                ps.setString(2, flight.getFromCity());
+                ps.setString(3, flight.getToCity());
+                ps.setTimestamp(4, Timestamp.valueOf(flight.getDeparture().toLocalDateTime()));
+                ps.setTimestamp(5, Timestamp.valueOf(flight.getArrival().toLocalDateTime()));
+                ps.setInt(6, flight.getPassengerCount());
+                ps.setBigDecimal(7, flight.getTicketPrice());
+                ps.setTimestamp(8, Timestamp.valueOf(flight.getCreatedAt()));
+                ps.setTimestamp(9, Timestamp.valueOf(flight.getUpdatedAt()));
+            }
+
+            @Override
+            public int getBatchSize() {
+                return flights.size();
+            }
+        });
     }
 
     public Flight update(Flight flight) {
