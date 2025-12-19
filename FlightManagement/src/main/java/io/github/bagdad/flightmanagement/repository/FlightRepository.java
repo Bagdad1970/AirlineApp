@@ -6,16 +6,13 @@ import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.jdbc.core.BatchPreparedStatementSetter;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Repository;
-import org.springframework.transaction.annotation.Transactional;
 
-import java.beans.Transient;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
-import java.util.stream.Collectors;
 
 @Repository
 public class FlightRepository {
@@ -214,5 +211,20 @@ public class FlightRepository {
         return jdbcTemplate.update(sql, id);
     }
 
+
+    public void updatePassengerCount(Flight flight) {
+        String sql = """
+            UPDATE flights SET
+                passenger_count = ?,
+                updated_at = ?
+            WHERE id = ?
+        """;
+
+        jdbcTemplate.update(sql,
+                flight.getPassengerCount(),
+                flight.getUpdatedAt(),
+                flight.getId());
+
+    }
 
 }

@@ -1,6 +1,16 @@
 spring:
   datasource:
-    url: jdbc:postgresql://172.19.0.2:5432/flight_db
+    url: jdbc:postgresql://172.19.0.4:5432/flight_db
     username: "user"
     password: "password"
     driver-class-name: org.postgresql.Driver
+
+
+  rabbitmq:
+    host: localhost
+    port: 5672
+    username: guest
+    password: guest
+
+server:
+  port: 8081

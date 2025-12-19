@@ -39,4 +39,18 @@ public class Flight {
 
     private LocalDateTime updatedAt;
 
+    public boolean canBook(Integer passengerCount) {
+        return this.passengerCount >= passengerCount;
+    }
+
+    public void book(Integer passengerCount) {
+        this.passengerCount -= passengerCount;
+    }
+
+    public void cancelReservation(Integer passengerCount) {
+        this.passengerCount += passengerCount;
+    }
+
+//    public void updateReservation(Integer ) {
+//    }
 }

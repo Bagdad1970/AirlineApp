@@ -1,12 +1,12 @@
 package io.github.bagdad.flightmanagement.controller;
 
 import io.github.bagdad.flightmanagement.dto.request.FlightCreate;
+import io.github.bagdad.flightmanagement.dto.request.FlightDelete;
 import io.github.bagdad.flightmanagement.dto.request.FlightQuery;
 import io.github.bagdad.flightmanagement.dto.request.FlightUpdate;
 import io.github.bagdad.flightmanagement.model.Flight;
 import io.github.bagdad.flightmanagement.service.FlightService;
 import io.swagger.v3.oas.annotations.Parameter;
-import org.springframework.core.io.InputStreamResource;
 import org.springframework.core.io.Resource;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
@@ -63,6 +63,11 @@ public class FlightController {
         return service.query(query);
     }
 
+    @PostMapping("/delete")
+    public void delete(FlightDelete request) {
+        service.deleteById(request.id());
+    }
+
     @GetMapping("/all")
     public List<Flight> findAll() {
         return service.findAll();
@@ -85,10 +90,5 @@ public class FlightController {
 
         return ResponseEntity.ok("CSV Data Saved into Database");
     }
-
-//    @PostMapping("/batch-create")
-//    public void saveAll(List<Flight> flights) {
-//
-//    }
 
 }

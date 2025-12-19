@@ -1,6 +1,12 @@
 spring:
   datasource:
-    url: jdbc:postgresql://172.19.0.2:5432/booking_db
+    url: jdbc:postgresql://172.19.0.3:5432/booking_db
     username: "user"
     password: "password"
     driver-class-name: org.postgresql.Driver
+
+  rabbitmq:
+    host: localhost
+    port: 5672
+    username: guest
+    password: guest

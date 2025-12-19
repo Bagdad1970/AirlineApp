@@ -7,7 +7,7 @@ services:
       POSTGRES_USER: user
       POSTGRES_PASSWORD: password
     volumes:
-      - pgdata:/var/lib/postgresql
+      - flight-pgdata:/var/lib/postgresql
       - ./initdb.d:/docker-entrypoint-initdb.d
     healthcheck:
       test: [ "CMD-SHELL", "pg_isready -U user -d flight_db" ]
@@ -34,38 +34,38 @@ services:
     volumes:
       - ./FlightManagement/src/main/resources/db/migration:/flyway/sql
 
-#  booking-db:
-#    image: postgres
-#    container_name: booking-db
-#    environment:
-#      POSTGRES_DB: booking_db
-#      POSTGRES_USER: user
-#      POSTGRES_PASSWORD: password
-#    volumes:
-#      - pgdata:/var/lib/postgresql
-#      - ./initdb.d:/docker-entrypoint-initdb.d
-#    healthcheck:
-#      test: [ "CMD-SHELL", "pg_isready -U user -d booking_db" ]
-#      interval: 5s
-#      timeout: 5s
-#      retries: 10
-#      start_period: 10s
-#    ports: ["5434:5432"]
-#
-#  booking-flyway:
-#    image: flyway/flyway
-#    container_name: booking-flyway
-#    depends_on:
-#      - booking-db
-#    environment:
-#      - FLYWAY_URL=jdbc:postgresql://booking-db:5432/booking_db
-#      - FLYWAY_USER=user
-#      - FLYWAY_PASSWORD=password
-#      - FLYWAY_JDBC_DRIVERS=postgresql
-#      - FLYWAY_LOCATIONS=filesystem:/flyway/sql
-#    command: migrate
-#    volumes:
-#      - ./TicketBooking/src/main/resources/db/migration:/flyway/sql
+  booking-db:
+    image: postgres
+    container_name: booking-db
+    environment:
+      POSTGRES_DB: booking_db
+      POSTGRES_USER: user
+      POSTGRES_PASSWORD: password
+    volumes:
+      - booking-pgdata:/var/lib/postgresql
+      - ./initdb.d:/docker-entrypoint-initdb.d
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U user -d booking_db" ]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+      start_period: 10s
+    ports: ["5434:5432"]
+
+  booking-flyway:
+    image: flyway/flyway
+    container_name: booking-flyway
+    depends_on:
+      - booking-db
+    environment:
+      - FLYWAY_URL=jdbc:postgresql://booking-db:5432/booking_db
+      - FLYWAY_USER=user
+      - FLYWAY_PASSWORD=password
+      - FLYWAY_JDBC_DRIVERS=postgresql
+      - FLYWAY_LOCATIONS=filesystem:/flyway/sql
+    command: migrate
+    volumes:
+      - ./TicketBooking/src/main/resources/db/migration:/flyway/sql
 
 #  flight-service:
 #    build: ./FlightManagement
@@ -80,15 +80,16 @@ services:
 #      FLIGHT_SERVICE_URL: http://flight-service:8080
 #    depends_on: [booking-db, flight-service]
 
-#  rabbitmq:
-#    image: rabbitmq:3.13-management-alpine
-#    container_name: rabbitmq
-#    ports:
-#      - "5672:5672"
-#      - "15672:15672"
-#    volumes:
-#      - rabbitmq_data:/var/lib/rabbitmq
+  rabbitmq:
+    image: rabbitmq:3.13-management-alpine
+    container_name: rabbitmq
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+    volumes:
+      - rabbitmq_data:/var/lib/rabbitmq
 
 volumes:
-  pgdata:
+  flight-pgdata:
+  booking-pgdata:
   rabbitmq_data:

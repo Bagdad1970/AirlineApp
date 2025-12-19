@@ -1,6 +1,7 @@
 package io.github.bagdad.ticketbooking.controller;
 
 import io.github.bagdad.ticketbooking.dto.request.BookingCreate;
+import io.github.bagdad.ticketbooking.dto.request.BookingDelete;
 import io.github.bagdad.ticketbooking.dto.request.BookingUpdate;
 import io.github.bagdad.ticketbooking.model.Booking;
 import io.github.bagdad.ticketbooking.service.BookingService;
@@ -58,6 +59,11 @@ public class BookingController {
                         "attachment; filename=bookings.csv")
                 .contentType(MediaType.parseMediaType("application/csv"))
                 .body(service.load());
+    }
+
+    @PostMapping("/delete")
+    public void cancelReservation(BookingDelete request) {
+        service.cancel(request.id());
     }
 
 }
