@@ -57,4 +57,13 @@ public class FlightEventPublisher {
         );
     }
 
+    public void publishFlightCancelled(Long id) {
+        rabbitTemplate.convertAndSend(
+                RabbitConfig.EXCHANGE,
+                "flight.booking-rejected",
+                new FlightCancelled(
+                        id
+                )
+        );
+    }
 }

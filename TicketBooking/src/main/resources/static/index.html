@@ -1,0 +1,500 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>Авиакомпания — Управление рейсами и бронирование</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            background: #f8fafc;
+            color: #1e293b;
+            line-height: 1.5;
+            padding: 20px;
+        }
+        header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        h1 { font-size: 2rem; color: #0f172a; }
+        .subtitle { color: #64748b; margin-top: 8px; }
+
+        .tabs {
+            display: flex;
+            gap: 1px;
+            background: #e2e8f0;
+            border-radius: 8px;
+            overflow: hidden;
+            max-width: 600px;
+            margin: 0 auto 24px;
+        }
+        .tab {
+            flex: 1;
+            padding: 14px;
+            text-align: center;
+            background: white;
+            cursor: pointer;
+            font-weight: 500;
+            transition: all 0.2s;
+        }
+        .tab.active {
+            background: #3b82f6;
+            color: white;
+        }
+
+        .section { display: none; }
+        .section.active { display: block; }
+
+        .card {
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+        .card h2 {
+            color: #334155;
+            margin-bottom: 16px;
+            font-size: 1.3rem;
+            border-bottom: 1px solid #e2e8f0;
+            padding-bottom: 8px;
+        }
+
+        .form-group {
+            margin-bottom: 16px;
+        }
+        label {
+            display: block;
+            margin-bottom: 6px;
+            font-weight: 500;
+            color: #475569;
+        }
+        input, select, button, textarea {
+            width: 100%;
+            padding: 10px 12px;
+            border: 1px solid #cbd5e1;
+            border-radius: 6px;
+            font-size: 15px;
+        }
+        input:focus, select:focus {
+            outline: none;
+            border-color: #3b82f6;
+            box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.2);
+        }
+        button {
+            background: #3b82f6;
+            color: white;
+            font-weight: 500;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+        button:hover:not(:disabled) { background: #2563eb; }
+        button:disabled { opacity: 0.6; cursor: not-allowed; }
+
+        .response {
+            margin-top: 20px;
+            padding: 14px;
+            background: #f1f5f9;
+            border-radius: 6px;
+            font-family: monospace;
+            white-space: pre-wrap;
+            max-height: 300px;
+            overflow: auto;
+        }
+
+        .list {
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+            overflow: hidden;
+        }
+        .list-header {
+            background: #f1f5f9;
+            padding: 12px 16px;
+            font-weight: 600;
+            color: #334155;
+        }
+        .list-body {
+            max-height: 400px;
+            overflow-y: auto;
+        }
+        .list-item {
+            padding: 12px 16px;
+            border-bottom: 1px solid #e2e8f0;
+            font-size: 0.95rem;
+        }
+        .list-item:last-child { border: none; }
+
+        .error { color: #ef4444; }
+        .success { color: #10b981; }
+
+        footer {
+            text-align: center;
+            margin-top: 30px;
+            color: #94a3b8;
+            font-size: 0.85rem;
+        }
+    </style>
+</head>
+<body>
+
+<header>
+    <h1>✈️ Авиакомпания</h1>
+    <p class="subtitle">Flight Management (8081) • Ticket Booking (8080)</p>
+</header>
+
+<div class="tabs">
+    <div class="tab active" data-tab="flights">Управление рейсами</div>
+    <div class="tab" data-tab="bookings">Бронирование</div>
+</div>
+
+<!-- ✈️ FLIGHTS SECTION -->
+<div id="flights" class="section active">
+    <!-- CREATE -->
+    <div class="card">
+        <h2>🆕 Создать рейс</h2>
+        <form id="createForm">
+            <div class="form-group">
+                <label>Номер рейса</label>
+                <input name="number" required placeholder="SU123" />
+            </div>
+            <div class="form-group">
+                <label>Город вылета</label>
+                <input name="fromCity" required placeholder="Москва" />
+            </div>
+            <div class="form-group">
+                <label>Город прилёта</label>
+                <input name="toCity" required placeholder="Санкт-Петербург" />
+            </div>
+            <div class="form-group">
+                <label>Вылет (ISO 8601, например: 2025-12-21T08:00:00+03:00)</label>
+                <input name="departure" type="text" required placeholder="2025-12-21T08:00:00+03:00" />
+            </div>
+            <div class="form-group">
+                <label>Прилёт (ISO 8601)</label>
+                <input name="arrival" type="text" required placeholder="2025-12-21T09:30:00+03:00" />
+            </div>
+            <div class="form-group">
+                <label>Мест (passengerCount)</label>
+                <input name="passengerCount" type="number" min="0" required value="180" />
+            </div>
+            <div class="form-group">
+                <label>Цена билета</label>
+                <input name="ticketPrice" type="number" step="0.01" min="0" required value="5000.00" />
+            </div>
+            <button type="submit">Создать рейс</button>
+        </form>
+        <div id="createResponse" class="response" style="display:none;"></div>
+    </div>
+
+    <!-- UPDATE -->
+    <div class="card">
+        <h2>✏️ Обновить рейс</h2>
+        <form id="updateForm">
+            <div class="form-group">
+                <label>ID рейса</label>
+                <input name="id" type="number" required />
+            </div>
+            <div class="form-group">
+                <label>Номер рейса</label>
+                <input name="number" required />
+            </div>
+            <div class="form-group">
+                <label>Город вылета</label>
+                <input name="fromCity" required />
+            </div>
+            <div class="form-group">
+                <label>Город прилёта</label>
+                <input name="toCity" required />
+            </div>
+            <div class="form-group">
+                <label>Вылет (ISO 8601)</label>
+                <input name="departure" type="text" required />
+            </div>
+            <div class="form-group">
+                <label>Прилёт (ISO 8601)</label>
+                <input name="arrival" type="text" required />
+            </div>
+            <div class="form-group">
+                <label>Мест</label>
+                <input name="passengerCount" type="number" min="0" required />
+            </div>
+            <div class="form-group">
+                <label>Цена билета</label>
+                <input name="ticketPrice" type="number" step="0.01" min="0" required />
+            </div>
+            <button type="submit">Обновить рейс</button>
+        </form>
+        <div id="updateResponse" class="response" style="display:none;"></div>
+    </div>
+
+    <!-- DELETE -->
+    <div class="card">
+        <h2>🗑 Удалить рейс</h2>
+        <form id="deleteForm">
+            <div class="form-group">
+                <label>ID рейса</label>
+                <input name="id" type="number" required />
+            </div>
+            <button type="submit">Удалить</button>
+        </form>
+        <div id="deleteResponse" class="response" style="display:none;"></div>
+    </div>
+
+    <!-- QUERY (by fields) -->
+    <div class="card">
+        <h2>🔍 Запрос рейсов</h2>
+        <form id="queryForm">
+            <div class="form-group">
+                <label>Номер рейса (опционально)</label>
+                <input name="number" />
+            </div>
+            <div class="form-group">
+                <label>Город вылета (опционально)</label>
+                <input name="fromCity" />
+            </div>
+            <div class="form-group">
+                <label>Город прилёта (опционально)</label>
+                <input name="toCity" />
+            </div>
+            <button type="submit">Найти рейсы</button>
+        </form>
+        <div id="queryResponse" class="response" style="display:none;"></div>
+    </div>
+
+    <!-- LIST ALL -->
+    <div class="card">
+        <h2>📋 Все рейсы</h2>
+        <button id="listFlightsBtn">Загрузить список</button>
+        <div id="listFlightsResponse" class="response" style="display:none;"></div>
+    </div>
+
+    <!-- IMPORT / EXPORT -->
+    <div class="card">
+        <h2>📥 Экспорт / Импорт CSV</h2>
+        <div style="display:flex; gap:10px; flex-wrap:wrap;">
+            <a href="http://localhost:8081/api/flight/export-csv" target="_blank">
+                <button type="button">⬇️ Скачать flights.csv</button>
+            </a>
+            <form id="importForm" style="flex:1; min-width:250px;">
+                <div class="form-group">
+                    <label>Загрузить CSV</label>
+                    <input type="file" id="csvFile" accept=".csv" required />
+                </div>
+                <button type="submit">📤 Загрузить в БД</button>
+            </form>
+        </div>
+        <div id="importResponse" class="response" style="display:none;"></div>
+    </div>
+</div>
+
+<!-- 🎫 BOOKINGS SECTION -->
+<div id="bookings" class="section">
+    <!-- CREATE BOOKING -->
+    <div class="card">
+        <h2>🎟 Создать бронь</h2>
+        <form id="bookingCreateForm">
+            <div class="form-group">
+                <label>ID рейса</label>
+                <input name="flightId" type="number" required />
+            </div>
+            <div class="form-group">
+                <label>Количество пассажиров</label>
+                <input name="passengerCount" type="number" min="1" required value="1" />
+            </div>
+            <button type="submit">Забронировать</button>
+        </form>
+        <div id="bookingCreateResponse" class="response" style="display:none;"></div>
+    </div>
+
+    <!-- UPDATE BOOKING -->
+    <div class="card">
+        <h2>✏️ Изменить бронь</h2>
+        <form id="bookingUpdateForm">
+            <div class="form-group">
+                <label>ID брони</label>
+                <input name="id" type="number" required />
+            </div>
+            <div class="form-group">
+                <label>Новое количество пассажиров</label>
+                <input name="passengerCount" type="number" min="1" required />
+            </div>
+            <button type="submit">Обновить</button>
+        </form>
+        <div id="bookingUpdateResponse" class="response" style="display:none;"></div>
+    </div>
+
+    <!-- CANCEL BOOKING -->
+    <div class="card">
+        <h2>❌ Отменить бронь</h2>
+        <form id="bookingDeleteForm">
+            <div class="form-group">
+                <label>ID брони</label>
+                <input name="id" type="number" required />
+            </div>
+            <button type="submit">Отменить</button>
+        </form>
+        <div id="bookingDeleteResponse" class="response" style="display:none;"></div>
+    </div>
+
+    <!-- LIST ALL BOOKINGS -->
+    <div class="card">
+        <h2>📋 Все бронирования</h2>
+        <button id="listBookingsBtn">Загрузить список</button>
+        <div id="listBookingsResponse" class="response" style="display:none;"></div>
+    </div>
+
+    <!-- EXPORT BOOKINGS CSV -->
+    <div class="card">
+        <h2>📥 Экспорт бронирований</h2>
+        <a href="http://localhost:8080/api/booking/export-csv" target="_blank">
+            <button type="button">⬇️ Скачать bookings.csv</button>
+        </a>
+    </div>
+</div>
+
+<footer>
+    <p>Фронтенд для Spring Boot микросервисов • Только существующие эндпоинты</p>
+</footer>
+
+<script>
+    // === TABS ===
+    document.querySelectorAll('.tab').forEach(tab => {
+        tab.addEventListener('click', () => {
+            document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+            document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+            tab.classList.add('active');
+            document.getElementById(tab.dataset.tab).classList.add('active');
+        });
+    });
+
+    // === HELPERS ===
+    const showResponse = (elId, text, isError = false) => {
+        const el = document.getElementById(elId);
+        el.textContent = text;
+        el.style.display = 'block';
+        el.className = 'response ' + (isError ? 'error' : 'success');
+    };
+
+    const postJSON = async (url, data, elId) => {
+        try {
+            const res = await fetch(url, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(data)
+            });
+            const json = await res.json();
+            showResponse(elId, JSON.stringify(json, null, 2), !res.ok);
+        } catch (err) {
+            showResponse(elId, `❌ Ошибка: ${err.message}`, true);
+        }
+    };
+
+    const getJSON = async (url, elId) => {
+        try {
+            const res = await fetch(url);
+            const json = await res.json();
+            showResponse(elId, JSON.stringify(json, null, 2), !res.ok);
+        } catch (err) {
+            showResponse(elId, `❌ Ошибка: ${err.message}`, true);
+        }
+    };
+
+    // === FLIGHTS ===
+    document.getElementById('createForm').addEventListener('submit', e => {
+        e.preventDefault();
+        const fd = new FormData(e.target);
+        const data = Object.fromEntries(fd.entries());
+        // convert numbers
+        data.passengerCount = parseInt(data.passengerCount);
+        data.ticketPrice = parseFloat(data.ticketPrice);
+        postJSON('http://localhost:8081/api/flight/create', data, 'createResponse');
+    });
+
+    document.getElementById('updateForm').addEventListener('submit', e => {
+        e.preventDefault();
+        const fd = new FormData(e.target);
+        const data = Object.fromEntries(fd.entries());
+        data.id = parseInt(data.id);
+        data.passengerCount = parseInt(data.passengerCount);
+        data.ticketPrice = parseFloat(data.ticketPrice);
+        postJSON('http://localhost:8081/api/flight/update', data, 'updateResponse');
+    });
+
+    document.getElementById('deleteForm').addEventListener('submit', e => {
+        e.preventDefault();
+        const fd = new FormData(e.target);
+        const id = parseInt(fd.get('id'));
+        postJSON('http://localhost:8081/api/flight/delete', { id }, 'deleteResponse');
+    });
+
+    document.getElementById('queryForm').addEventListener('submit', e => {
+        e.preventDefault();
+        const fd = new FormData(e.target);
+        const data = Object.fromEntries(fd.entries());
+        // remove empty fields
+        Object.keys(data).forEach(k => data[k] === '' && delete data[k]);
+        postJSON('http://localhost:8081/api/flight/query', data, 'queryResponse');
+    });
+
+    document.getElementById('listFlightsBtn').addEventListener('click', () => {
+        getJSON('http://localhost:8081/api/flight/all', 'listFlightsResponse');
+    });
+
+    document.getElementById('importForm').addEventListener('submit', async e => {
+        e.preventDefault();
+        const fileInput = document.getElementById('csvFile');
+        const file = fileInput.files[0];
+        if (!file) return showResponse('importResponse', '❌ Выберите файл', true);
+
+        const formData = new FormData();
+        formData.append('file', file);
+
+        try {
+            const res = await fetch('http://localhost:8081/api/flight/import-csv', {
+                method: 'POST',
+                body: formData
+            });
+            const text = await res.text();
+            showResponse('importResponse', text, !res.ok);
+        } catch (err) {
+            showResponse('importResponse', `❌ Ошибка: ${err.message}`, true);
+        }
+    });
+
+    // === BOOKINGS ===
+    document.getElementById('bookingCreateForm').addEventListener('submit', e => {
+        e.preventDefault();
+        const fd = new FormData(e.target);
+        const data = {
+            flightId: parseInt(fd.get('flightId')),
+            passengerCount: parseInt(fd.get('passengerCount'))
+        };
+        postJSON('http://localhost:8080/api/booking/create', data, 'bookingCreateResponse');
+    });
+
+    document.getElementById('bookingUpdateForm').addEventListener('submit', e => {
+        e.preventDefault();
+        const fd = new FormData(e.target);
+        const data = {
+            id: parseInt(fd.get('id')),
+            passengerCount: parseInt(fd.get('passengerCount'))
+        };
+        postJSON('http://localhost:8080/api/booking/update', data, 'bookingUpdateResponse');
+    });
+
+    document.getElementById('bookingDeleteForm').addEventListener('submit', e => {
+        e.preventDefault();
+        const fd = new FormData(e.target);
+        const id = parseInt(fd.get('id'));
+        postJSON('http://localhost:8080/api/booking/delete', { id }, 'bookingDeleteResponse');
+    });
+
+    document.getElementById('listBookingsBtn').addEventListener('click', () => {
+        getJSON('http://localhost:8080/api/booking/all', 'listBookingsResponse');
+    });
+</script>
+
+</body>
+</html>

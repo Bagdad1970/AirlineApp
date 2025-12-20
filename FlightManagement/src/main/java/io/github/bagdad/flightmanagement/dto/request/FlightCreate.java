@@ -23,12 +23,10 @@ public record FlightCreate(
 
     @NotNull(message = "Departure time is required")
     @JsonProperty("departure")
-    @JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm:ssXXX")
     OffsetDateTime departure,
 
     @NotNull(message = "Arrival time is required")
     @JsonProperty("arrival")
-    @JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm:ssXXX")
     OffsetDateTime arrival,
 
     @NotNull
