@@ -1,12 +1,14 @@
 package io.github.bagdad.flightmanagement.repository;
 
-import io.github.bagdad.flightmanagement.dto.request.FlightQuery;
+import io.github.bagdad.models.requests.FlightQueryRequest;
 import io.github.bagdad.flightmanagement.model.Flight;
+import io.github.bagdad.flightmanagement.model.FlightStatistics;
 import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.jdbc.core.BatchPreparedStatementSetter;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Repository;
 
+import java.math.BigDecimal;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.sql.Timestamp;
@@ -95,7 +97,6 @@ public class FlightRepository {
                 to_city  = ?,
                 departure = ?,
                 arrival = ?,
-                passenger_count = ?,
                 ticket_price = ?,
                 updated_at = ?
             WHERE id = ?
@@ -108,7 +109,6 @@ public class FlightRepository {
                 flight.getToCity(),
                 flight.getDeparture(),
                 flight.getArrival(),
-                flight.getPassengerCount(),
                 flight.getTicketPrice(),
                 flight.getUpdatedAt(),
                 flight.getId()
@@ -117,7 +117,7 @@ public class FlightRepository {
         return flight;
     }
 
-    public List<Flight> query(FlightQuery query) {
+    public List<Flight> query(FlightQueryRequest query) {
         StringBuilder sql = new StringBuilder("SELECT * FROM flights WHERE 1=1");
 
         List<Object> params = new ArrayList<>();
@@ -225,6 +225,56 @@ public class FlightRepository {
                 flight.getUpdatedAt(),
                 flight.getId());
 
+    }
+
+    private String calculateTheMostDepartureCity() {
+        String sql = """
+            SELECT from_city, COUNT(*) AS departure_count
+            FROM flights
+            GROUP BY from_city
+            ORDER BY departure_count DESC
+            LIMIT 1
+        """;
+
+        return jdbcTemplate.queryForObject(
+                sql,
+                (rs, rowNum) -> rs.getString("from_city")
+        );
+    }
+
+    private Integer calculateTotalFlights() {
+        String sql = """
+            SELECT COUNT(*) AS total_flights
+            FROM flights
+        """;
+
+        return jdbcTemplate.queryForObject(
+                sql,
+                (rs, rowNum) -> rs.getInt("total_flights")
+        );
+    }
+
+    private String calculateTheMostVisitingCity() {
+        String sql = """
+            SELECT to_city, COUNT(*) AS arrival_count
+            FROM flights
+            GROUP BY to_city
+            ORDER BY arrival_count DESC
+            LIMIT 1
+        """;
+
+        return jdbcTemplate.queryForObject(
+                sql,
+                (rs, rowNum) -> rs.getString("to_city")
+        );
+    }
+
+    public FlightStatistics calculateStatistics() {
+        return new FlightStatistics(
+                calculateTheMostDepartureCity(),
+                calculateTheMostVisitingCity(),
+                calculateTotalFlights()
+        );
     }
 
 }

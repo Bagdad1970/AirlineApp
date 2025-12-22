@@ -7,10 +7,14 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @NoArgsConstructor
 @Data
-public class BookingUpdateSucceeded implements IEvent {
+public class BookingUpdateRejected {
 
     private Long bookingId;
 
-    private Integer passengerCountChange;
+    private Long flightId;
+
+    private Integer currentPassengerCount;
+
+    private Integer newPassengerCount;
 
 }

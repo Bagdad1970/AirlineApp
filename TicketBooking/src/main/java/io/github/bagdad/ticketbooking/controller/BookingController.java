@@ -1,9 +1,8 @@
 package io.github.bagdad.ticketbooking.controller;
 
-import io.github.bagdad.ticketbooking.dto.request.BookingCreate;
-import io.github.bagdad.ticketbooking.dto.request.BookingDelete;
-import io.github.bagdad.ticketbooking.dto.request.BookingUpdate;
+import io.github.bagdad.models.requests.*;
 import io.github.bagdad.ticketbooking.model.Booking;
+import io.github.bagdad.ticketbooking.model.BookingStatistics;
 import io.github.bagdad.ticketbooking.service.BookingService;
 import org.springframework.core.io.Resource;
 import org.springframework.http.HttpHeaders;
@@ -26,7 +25,7 @@ public class BookingController {
     }
 
     @PostMapping("/create")
-    public Booking create(BookingCreate request) {
+    public Booking create(BookingCreateRequest request) {
         Booking booking = new Booking();
 
         booking.setFlightId(request.flightId());
@@ -35,8 +34,13 @@ public class BookingController {
         return service.create(booking);
     }
 
+    @PostMapping("/query")
+    public List<Booking> query(BookingQueryRequest query) {
+        return service.query(query);
+    }
+
     @PostMapping("/update")
-    public Booking update(BookingUpdate request) {
+    public Booking update(BookingUpdateRequest request) {
         Booking booking = new Booking();
 
         booking.setId(request.id());
@@ -60,8 +64,13 @@ public class BookingController {
     }
 
     @PostMapping("/delete")
-    public void cancelReservation(BookingDelete request) {
+    public void cancelReservation(BookingDeleteRequest request) {
         service.cancel(request.id());
+    }
+
+    @PostMapping("/statistics")
+    public BookingStatistics calculateStatistics() {
+        return service.calculateStatistics();
     }
 
 }

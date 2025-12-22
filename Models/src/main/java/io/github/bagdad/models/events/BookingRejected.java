@@ -7,7 +7,7 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @NoArgsConstructor
 @Data
-public class BookingRejected implements IEvent {
+public class BookingRejected {
 
     private Long bookingId;
 

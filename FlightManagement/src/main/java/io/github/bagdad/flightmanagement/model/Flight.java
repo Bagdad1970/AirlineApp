@@ -51,6 +51,4 @@ public class Flight {
         this.passengerCount += passengerCount;
     }
 
-//    public void updateReservation(Integer ) {
-//    }
 }

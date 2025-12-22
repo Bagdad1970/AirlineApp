@@ -21,6 +21,8 @@ public class Booking {
 
     private Integer passengerCount;
 
+    private BookingStatus status;
+
     private LocalDateTime createdAt;
 
     private LocalDateTime updatedAt;

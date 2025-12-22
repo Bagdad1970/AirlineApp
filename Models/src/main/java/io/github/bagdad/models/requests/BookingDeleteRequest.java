@@ -1,8 +1,8 @@
-package io.github.bagdad.ticketbooking.dto.request;
+package io.github.bagdad.models.requests;
 
 import jakarta.validation.constraints.NotNull;
 
-public record BookingDelete(
+public record BookingDeleteRequest(
 
     @NotNull
     Long id

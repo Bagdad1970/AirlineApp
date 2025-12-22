@@ -21,11 +21,12 @@ public class BookingEventFactory {
         );
     }
 
-    public static BookingUpdated bookingUpdated(Long bookingId, Long flightId, Integer passengerCountChange) {
+    public static BookingUpdated bookingUpdated(Long bookingId, Long flightId, Integer currentPassengerCount, Integer nwePassengerCount) {
         return new BookingUpdated(
                 bookingId,
                 flightId,
-                passengerCountChange
+                currentPassengerCount,
+                nwePassengerCount
         );
     }
 }

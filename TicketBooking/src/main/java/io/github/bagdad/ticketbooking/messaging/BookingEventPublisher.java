@@ -3,7 +3,6 @@ package io.github.bagdad.ticketbooking.messaging;
 import io.github.bagdad.models.events.BookingCancelled;
 import io.github.bagdad.models.events.BookingCreated;
 import io.github.bagdad.models.events.BookingUpdated;
-import io.github.bagdad.models.events.FlightCancelled;
 import io.github.bagdad.ticketbooking.config.RabbitConfig;
 import io.github.bagdad.ticketbooking.model.Booking;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
@@ -38,8 +37,8 @@ public class BookingEventPublisher {
         );
     }
 
-    public void publishBookingUpdated(Long bookingId, Long flightId, Integer passengerCountChange) {
-        BookingUpdated event = BookingEventFactory.bookingUpdated(bookingId, flightId, passengerCountChange);
+    public void publishBookingUpdated(Long bookingId, Long flightId, Integer currentPassengerCount, Integer newPassengerCount) {
+        BookingUpdated event = BookingEventFactory.bookingUpdated(bookingId, flightId, currentPassengerCount, newPassengerCount);
 
         rabbitTemplate.convertAndSend(
                 RabbitConfig.EXCHANGE,

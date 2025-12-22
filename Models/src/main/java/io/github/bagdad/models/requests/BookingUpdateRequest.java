@@ -1,10 +1,10 @@
-package io.github.bagdad.ticketbooking.dto.request;
+package io.github.bagdad.models.requests;
 
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotNull;
 
-public record BookingUpdate(
+public record BookingUpdateRequest(
 
         @NotNull
         Long id,

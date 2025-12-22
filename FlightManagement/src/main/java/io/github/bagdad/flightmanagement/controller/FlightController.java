@@ -1,10 +1,11 @@
 package io.github.bagdad.flightmanagement.controller;
 
-import io.github.bagdad.flightmanagement.dto.request.FlightCreate;
-import io.github.bagdad.flightmanagement.dto.request.FlightDelete;
-import io.github.bagdad.flightmanagement.dto.request.FlightQuery;
-import io.github.bagdad.flightmanagement.dto.request.FlightUpdate;
+import io.github.bagdad.models.requests.FlightCreateRequest;
+import io.github.bagdad.models.requests.FlightDeleteRequest;
+import io.github.bagdad.models.requests.FlightQueryRequest;
+import io.github.bagdad.models.requests.FlightUpdateRequest;
 import io.github.bagdad.flightmanagement.model.Flight;
+import io.github.bagdad.flightmanagement.model.FlightStatistics;
 import io.github.bagdad.flightmanagement.service.FlightService;
 import io.swagger.v3.oas.annotations.Parameter;
 import org.springframework.core.io.Resource;
@@ -29,7 +30,7 @@ public class FlightController {
     }
 
     @PostMapping("/create")
-    public Flight create(FlightCreate request) {
+    public Flight create(FlightCreateRequest request) {
         Flight flight = new Flight();
 
         flight.setNumber(request.number());
@@ -44,7 +45,7 @@ public class FlightController {
     }
 
     @PostMapping("/update")
-    public Flight update(FlightUpdate request) {
+    public Flight update(FlightUpdateRequest request) {
         Flight flight = new Flight();
 
         flight.setId(request.id());
@@ -53,19 +54,18 @@ public class FlightController {
         flight.setToCity(request.toCity());
         flight.setDeparture(request.departure());
         flight.setArrival(request.arrival());
-        flight.setPassengerCount(request.passengerCount());
         flight.setTicketPrice(request.ticketPrice());
 
         return service.update(flight);
     }
 
     @PostMapping("/query")
-    public List<Flight> query(FlightQuery query) {
+    public List<Flight> query(FlightQueryRequest query) {
         return service.query(query);
     }
 
     @PostMapping("/delete")
-    public void delete(FlightDelete request) {
+    public void delete(FlightDeleteRequest request) {
         service.deleteById(request.id());
     }
 
@@ -86,10 +86,18 @@ public class FlightController {
     }
 
     @PostMapping(value="/import-csv", consumes = "application/csv")
-    public ResponseEntity<String> importAsCSV(@Parameter(description = "Файл для загрузки", required = true) @RequestParam("file") MultipartFile file) throws IOException {
+    public ResponseEntity<String> importAsCSV(
+            @Parameter(description = "Файл для загрузки", required = true)
+            @RequestParam("file") MultipartFile file
+    ) throws IOException {
         service.importFromCSV(file.getInputStream());
 
         return ResponseEntity.ok("CSV Data Saved into Database");
+    }
+
+    @PostMapping("/statistics")
+    public FlightStatistics calculateStatistics() {
+        return service.calculateStatistics();
     }
 
 }

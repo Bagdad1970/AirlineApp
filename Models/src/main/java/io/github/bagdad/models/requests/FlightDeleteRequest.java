@@ -1,8 +1,9 @@
-package io.github.bagdad.flightmanagement.dto.request;
+package io.github.bagdad.models.requests;
+
 
 import jakarta.validation.constraints.NotNull;
 
-public record FlightDelete(
+public record FlightDeleteRequest(
 
     @NotNull
     Long id

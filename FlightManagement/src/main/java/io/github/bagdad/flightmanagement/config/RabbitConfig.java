@@ -1,9 +1,6 @@
 package io.github.bagdad.flightmanagement.config;
 
-import io.github.bagdad.models.events.BookingConfirmed;
-import io.github.bagdad.models.events.BookingCreated;
-import io.github.bagdad.models.events.BookingRejected;
-import io.github.bagdad.models.events.FlightCancelled;
+import io.github.bagdad.models.events.*;
 import org.springframework.amqp.core.*;
 import org.springframework.amqp.rabbit.annotation.EnableRabbit;
 import org.springframework.amqp.rabbit.config.SimpleRabbitListenerContainerFactory;
@@ -23,13 +20,16 @@ import java.util.Map;
 @Configuration
 public class RabbitConfig {
 
-    public static final String EXCHANGE = "flight-exchange";
+    public static final String EXCHANGE = "booking-exchange";
 
-    public static final String FLIGHT_BOOKING_QUEUE = "flight-booking.queue";
-    public static final String BOOKING_FLIGHT_QUEUE = "booking-flight.queue";
+    public static final String BOOKING_CREATED_QUEUE = "booking.created.queue";
+    public static final String BOOKING_CANCELLED_QUEUE = "booking.cancelled.queue";
+    public static final String BOOKING_UPDATED_QUEUE = "booking.updated.queue";
+
 
     public static final String BOOKING_CREATED_ROUTING_KEY = "booking.created";
     public static final String BOOKING_CONFIRMED_ROUTING_KEY = "booking.confirmed";
+    public static final String BOOKING_UPDATED_ROUTING_KEY = "booking.updated";
     public static final String BOOKING_REJECTED_ROUTING_KEY = "booking.rejected";
     public static final String FLIGHT_CANCELLED_ROUTING_KEY = "flight.cancelled";
 
@@ -39,29 +39,42 @@ public class RabbitConfig {
     }
 
     @Bean
-    Queue flightQueue() {
-        return new Queue(FLIGHT_BOOKING_QUEUE, true);
+    Queue bookingCreatedQueue() {
+        return new Queue(BOOKING_CREATED_QUEUE, true);
     }
 
     @Bean
-    Queue bookingQueue() {
-        return new Queue(BOOKING_FLIGHT_QUEUE, true);
+    Queue bookingCancelledQueue() {
+        return new Queue(BOOKING_CANCELLED_QUEUE, true);
     }
 
     @Bean
-    Binding flightBinding() {
+    Queue bookingUpdatedQueue() {
+        return new Queue(BOOKING_UPDATED_QUEUE, true);
+    }
+
+    @Bean
+    Binding bookingCreatedBinding() {
         return BindingBuilder
-                .bind(flightQueue())
+                .bind(bookingCreatedQueue())
                 .to(exchange())
-                .with("flight.#");
+                .with("booking.created");
     }
 
     @Bean
-    Binding bookingBinding() {
+    Binding bookingCancelledBinding() {
         return BindingBuilder
-                .bind(bookingQueue())
+                .bind(bookingCancelledQueue())
                 .to(exchange())
-                .with("booking.#");
+                .with("booking.cancelled");
+    }
+
+    @Bean
+    Binding bookingUpdatedBinding() {
+        return BindingBuilder
+                .bind(bookingUpdatedQueue())
+                .to(exchange())
+                .with("booking.updated");
     }
 
     @Bean
@@ -78,9 +91,8 @@ public class RabbitConfig {
 
         Map<String, Class<?>> idClassMapping = new HashMap<>();
         idClassMapping.put("booking_created", BookingCreated.class);
-        idClassMapping.put("booking_confirmed", BookingConfirmed.class);
-        idClassMapping.put("booking_rejected", BookingRejected.class);
-        idClassMapping.put("flight_cancelled", FlightCancelled.class);
+        idClassMapping.put("booking_cancelled", BookingCancelled.class);
+        idClassMapping.put("booking_updated", BookingUpdated.class);
         classMapper.setIdClassMapping(idClassMapping);
 
         return classMapper;
@@ -102,8 +114,8 @@ public class RabbitConfig {
         SimpleRabbitListenerContainerFactory factory = new SimpleRabbitListenerContainerFactory();
         factory.setConnectionFactory(connectionFactory);
         factory.setMessageConverter(jsonMessageConverter);
-        factory.setConcurrentConsumers(3);
-        factory.setMaxConcurrentConsumers(10);
+        factory.setConcurrentConsumers(1);
+        factory.setMaxConcurrentConsumers(1);
 
         factory.setAcknowledgeMode(AcknowledgeMode.MANUAL);
 

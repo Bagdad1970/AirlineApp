@@ -1,13 +1,12 @@
-package io.github.bagdad.flightmanagement.dto.request;
+package io.github.bagdad.models.requests;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
 import jakarta.validation.constraints.*;
-import org.springframework.format.annotation.DateTimeFormat;
 
 import java.math.BigDecimal;
 import java.time.OffsetDateTime;
 
-public record FlightQuery (
+public record FlightQueryRequest(
 
         @Size(max = 10)
         String number,
@@ -19,19 +18,15 @@ public record FlightQuery (
         String toCity,
 
         @JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm")
-        @DateTimeFormat(pattern = "yyyy-MM-dd'T'HH:mm")
         OffsetDateTime departureMin,
 
         @JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm")
-        @DateTimeFormat(pattern = "yyyy-MM-dd'T'HH:mm")
         OffsetDateTime departureMax,
 
         @JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm")
-        @DateTimeFormat(pattern = "yyyy-MM-dd'T'HH:mm")
         OffsetDateTime arrivalMin,
 
         @JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm")
-        @DateTimeFormat(pattern = "yyyy-MM-dd'T'HH:mm")
         OffsetDateTime arrivalMax,
 
         @Min(value = 0, message = "Min passenger count cannot be negative")

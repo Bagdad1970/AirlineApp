@@ -1,26 +1,16 @@
 package io.github.bagdad.flightmanagement.messaging;
 
-import io.github.bagdad.models.events.BookingConfirmed;
-import io.github.bagdad.models.events.BookingRejected;
-import io.github.bagdad.models.events.BookingUpdated;
-import io.github.bagdad.models.events.FlightCancelled;
+import io.github.bagdad.models.events.*;
 
 public class FlightEventFactory {
 
     public static BookingConfirmed bookingConfirmed(Long bookingId, Long flightId) {
         return new BookingConfirmed(
-                bookingId,
-                flightId
-        );
-    }
-
-    public static BookingRejected bookingRejected(Long bookingId) {
-        return new BookingRejected(
                 bookingId
         );
     }
 
-    public static BookingRejected bookingCancelled(Long bookingId) {
+    public static BookingRejected bookingRejected(Long bookingId) {
         return new BookingRejected(
                 bookingId
         );
@@ -32,11 +22,20 @@ public class FlightEventFactory {
         );
     }
 
-    public static BookingUpdated bookingUpdated(Long bookingId, Long flightId, Integer passengerCountChange) {
-        return new BookingUpdated(
+    public static BookingUpdateRejected bookingUpdateRejected(Long bookingId, Long flightId, Integer currentPassengerCount, Integer newPassengerCount) {
+        return new BookingUpdateRejected(
                 bookingId,
                 flightId,
-                passengerCountChange
+                currentPassengerCount,
+                newPassengerCount
         );
     }
+
+    public static BookingUpdateConfirmed bookingUpdateConfirmed(Long bookingId, Long flightId) {
+        return new BookingUpdateConfirmed(
+                bookingId,
+                flightId
+        );
+    }
+
 }

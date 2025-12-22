@@ -1,10 +1,11 @@
 package io.github.bagdad.flightmanagement.service;
 
-import io.github.bagdad.flightmanagement.dto.request.FlightQuery;
+import io.github.bagdad.models.requests.FlightQueryRequest;
 import io.github.bagdad.flightmanagement.exception.FlightNotFoundException;
 import io.github.bagdad.flightmanagement.helper.CSVHelper;
 import io.github.bagdad.flightmanagement.messaging.FlightEventPublisher;
 import io.github.bagdad.flightmanagement.model.Flight;
+import io.github.bagdad.flightmanagement.model.FlightStatistics;
 import io.github.bagdad.flightmanagement.repository.FlightRepository;
 import io.github.bagdad.models.events.*;
 import org.springframework.core.io.InputStreamResource;
@@ -45,7 +46,6 @@ public class FlightService {
         if (flight.getToCity() != null) existing.setToCity(flight.getToCity());
         if (flight.getDeparture() != null) existing.setDeparture(flight.getDeparture());
         if (flight.getArrival() != null) existing.setArrival(flight.getArrival());
-        if (flight.getPassengerCount() != null) existing.setPassengerCount(flight.getPassengerCount());
         if (flight.getTicketPrice() != null) existing.setTicketPrice(flight.getTicketPrice());
 
         existing.setUpdatedAt(LocalDateTime.now());
@@ -56,8 +56,7 @@ public class FlightService {
         return repository.findAll();
     }
 
-    public List<Flight> query(FlightQuery query) {
-
+    public List<Flight> query(FlightQueryRequest query) {
         return repository.query(query);
     }
 
@@ -65,7 +64,7 @@ public class FlightService {
         Flight existingFlight = repository.findById(id)
                 .orElseThrow(() -> new FlightNotFoundException(id));
 
-        publisher.publishFlightCancelled(id);
+        publisher.publishFlightCancelled(existingFlight);
 
         repository.deleteById(id);
     }
@@ -120,13 +119,14 @@ public class FlightService {
         repository.updatePassengerCount(flight);
     }
 
-
     public void updateBookingOnFlight(BookingUpdated event) {
         Flight flight = repository.findById(event.getFlightId())
                 .orElseThrow(() -> new FlightNotFoundException(event.getFlightId()));
 
-        if (event.getPassengerCountChange() > 0 || flight.canBook(event.getPassengerCountChange())) {
-            flight.book(event.getPassengerCountChange());
+        int passengerCountDiff = event.getCurrentPassengerCount() - event.getNewPassengerCount();
+
+        if (passengerCountDiff >= 0) {
+            flight.cancelReservation(passengerCountDiff);
 
             LocalDateTime now = LocalDateTime.now();
 
@@ -134,10 +134,30 @@ public class FlightService {
 
             repository.updatePassengerCount(flight);
 
-            publisher.publishBookingUpdateSucceeded(event);
+            publisher.publishBookingUpdateConfirmed(event);
         }
         else {
-            publisher.publishBookingUpdateFailed(event);
+            int absolutePassengerCountDiff = Math.abs(passengerCountDiff);
+
+            if (flight.canBook(absolutePassengerCountDiff)) {
+                flight.book(absolutePassengerCountDiff);
+
+                LocalDateTime now = LocalDateTime.now();
+
+                flight.setUpdatedAt(now);
+
+                repository.updatePassengerCount(flight);
+
+                publisher.publishBookingUpdateConfirmed(event);
+            }
+            else {
+                publisher.publishBookingUpdateRejected(event);
+            }
         }
     }
+
+    public FlightStatistics calculateStatistics() {
+        return repository.calculateStatistics();
+    }
+
 }

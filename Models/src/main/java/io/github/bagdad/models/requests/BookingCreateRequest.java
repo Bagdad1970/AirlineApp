@@ -1,8 +1,8 @@
-package io.github.bagdad.ticketbooking.dto.request;
+package io.github.bagdad.models.requests;
 
 import jakarta.validation.constraints.*;
 
-public record BookingCreate(
+public record BookingCreateRequest(
 
         @NotNull
         Long flightId,

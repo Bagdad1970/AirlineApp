@@ -1,10 +1,14 @@
 package io.github.bagdad.ticketbooking.service;
 
 import io.github.bagdad.models.events.*;
+import io.github.bagdad.models.requests.BookingQueryRequest;
+import io.github.bagdad.models.requests.FlightQueryRequest;
 import io.github.bagdad.ticketbooking.exception.BookingNotFoundException;
 import io.github.bagdad.ticketbooking.helper.CSVHelper;
 import io.github.bagdad.ticketbooking.messaging.BookingEventPublisher;
 import io.github.bagdad.ticketbooking.model.Booking;
+import io.github.bagdad.ticketbooking.model.BookingStatistics;
+import io.github.bagdad.ticketbooking.model.BookingStatus;
 import io.github.bagdad.ticketbooking.repository.BookingRepository;
 import org.springframework.core.io.InputStreamResource;
 import org.springframework.stereotype.Service;
@@ -25,6 +29,8 @@ public class BookingService {
     }
 
     public Booking create(Booking booking) {
+        booking.setStatus(BookingStatus.PENDING);
+
         LocalDateTime now = LocalDateTime.now();
 
         booking.setCreatedAt(now);
@@ -41,17 +47,19 @@ public class BookingService {
         Booking existing = repository.findById(booking.getId())
                 .orElseThrow(() -> new BookingNotFoundException(booking.getId()));
 
-        if (booking.getPassengerCount() != null) {
-            Integer passengerCountChange = existing.getPassengerCount() - booking.getPassengerCount();
+        publisher.publishBookingUpdated(existing.getId(), existing.getFlightId(), existing.getPassengerCount(), booking.getPassengerCount());
 
-            publisher.publishBookingUpdated(existing.getId(), existing.getFlightId(), passengerCountChange);
+        existing.setStatus(BookingStatus.PENDING);
 
-            existing.setPassengerCount(booking.getPassengerCount());
-        }
+        existing.setPassengerCount(booking.getPassengerCount());
 
         existing.setUpdatedAt(LocalDateTime.now());
 
         return repository.update(existing);
+    }
+
+    public List<Booking> query(BookingQueryRequest query) {
+        return repository.query(query);
     }
 
     public List<Booking> findAll() {
@@ -79,17 +87,15 @@ public class BookingService {
         Booking booking = repository.findById(event.getBookingId())
                 .orElseThrow();
 
-        LocalDateTime now = LocalDateTime.now();
+        booking.setStatus(BookingStatus.CONFIRMED);
 
-        booking.setUpdatedAt(now);
-
-        booking.setFlightId(event.getFlightId());
+        booking.setUpdatedAt(LocalDateTime.now());
 
         repository.confirmBooking(booking);
     }
 
     public void reject(BookingRejected event) {
-        if (event.getBookingId() != null) {
+        if (event != null) {
             repository.deleteById(event.getBookingId());
         }
     }
@@ -100,4 +106,31 @@ public class BookingService {
         }
     }
 
+    public void confirmBookingUpdate(BookingUpdateConfirmed event) {
+        Booking booking = repository.findById(event.getBookingId())
+                .orElseThrow();
+
+        booking.setStatus(BookingStatus.CONFIRMED);
+
+        booking.setUpdatedAt(LocalDateTime.now());
+
+        repository.confirmBooking(booking);
+    }
+
+    public void rejectBookingUpdate(BookingUpdateRejected event) {
+        Booking booking = repository.findById(event.getBookingId())
+                .orElseThrow();
+
+        booking.setPassengerCount(event.getCurrentPassengerCount());
+
+        booking.setStatus(BookingStatus.CONFIRMED);
+
+        booking.setUpdatedAt(LocalDateTime.now());
+
+        repository.rejectBookingUpdate(booking);
+    }
+
+    public BookingStatistics calculateStatistics() {
+        return repository.calculateStatistics();
+    }
 }

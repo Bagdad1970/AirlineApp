@@ -7,10 +7,10 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @NoArgsConstructor
 @Data
-public class BookingUpdateFailed implements IEvent {
+public class BookingUpdateConfirmed {
 
     private Long bookingId;
 
-    private Integer passengerCountChange;
+    private Long flightId;
 
 }

@@ -7,7 +7,7 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @NoArgsConstructor
 @Data
-public class FlightCancelled implements IEvent {
+public class FlightCancelled {
 
     private Long flightId;
 
